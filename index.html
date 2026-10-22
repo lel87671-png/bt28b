@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ & Game kiểm tra tốc độ phản xạ - Bài tập 28b</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- NAVIGATION BAR & TRANG CHỦ --- */
+        nav {
+            width: 100%;
+            background-color: #1e293b;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-size: 16px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-menu a:hover, .nav-menu a.active {
+            color: #38bdf8;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 900px;
+            padding: 30px 20px;
+            flex: 1;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .profile-card {
+            background-color: #1e293b;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 30px;
+            border: 1px solid #334155;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #38bdf8;
+            background-color: #475569;
+        }
+
+        .profile-info h2 {
+            color: #38bdf8;
+            margin-bottom: 10px;
+            font-size: 26px;
+        }
+
+        .profile-info p {
+            margin: 6px 0;
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .menu-card {
+            background-color: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #334155;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-4px);
+            background-color: #2b3b52;
+            border-color: #38bdf8;
+        }
+
+        .menu-card h3 {
+            color: #38bdf8;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .menu-card p {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* --- PHẦN GAME (Bài tập 28b) --- */
+        .game-container {
+            background-color: #1e293b;
+            padding: 25px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .game-container h1 {
+            color: #38bdf8;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .game-controls-top {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .game-controls-top label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .game-controls-top select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #0f172a;
+            color: #fff;
+            border: 1px solid #475569;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #475569;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-action:hover { background-color: #64748b; }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .info-panel div span {
+            color: #38bdf8;
+            font-size: 16px;
+            display: block;
+            margin-top: 2px;
+        }
+        .info-panel .lives span { color: #f43f5e; }
+        .info-panel .highscore span { color: #fbbf24; }
+
+        #arena {
+            width: 700px;
+            height: 450px;
+            background-color: #090d16;
+            border: 3px solid #475569;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto 15px auto;
+            cursor: crosshair;
+        }
+
+        .target {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            animation: fadeInShrink 1.5s forwards linear;
+        }
+
+        .target.standard {
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle, #22c55e, #15803d);
+        }
+
+        .target.trap {
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle, #ef4444, #b91c1c);
+        }
+
+        .target.bonus {
+            width: 35px;
+            height: 35px;
+            background: radial-gradient(circle, #f59e0b, #b45309);
+            box-shadow: 0 0 15px #f59e0b;
+        }
+
+        @keyframes fadeInShrink {
+            0% { transform: scale(0); opacity: 0; }
+            15% { transform: scale(1); opacity: 1; }
+            85% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.3); opacity: 0; }
+        }
+
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            font-size: 18px;
+            pointer-events: none;
+            animation: floatUp 0.6s ease-out forwards;
+            z-index: 10;
+        }
+        .floating-text.plus { color: #22c55e; }
+        .floating-text.minus { color: #ef4444; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-35px); opacity: 0; }
+        }
+
+        #start-btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #0ea5e9;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        #start-btn:hover { background-color: #0284c7; }
+        #start-btn:disabled { background-color: #475569; cursor: not-allowed; }
+
+        .warning-text {
+            color: #f43f5e;
+            font-size: 13px;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+
+        /* Modal thông tin Người chơi */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #38bdf8;
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+        .modal-content h3 { color: #38bdf8; margin-bottom: 12px; }
+        .modal-content p { margin: 8px 0; color: #cbd5e1; }
+        .close-modal {
+            margin-top: 15px;
+            padding: 6px 16px;
+            background-color: #ef4444;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Thanh Menu điều hướng -->
+    <nav>
+        <div class="nav-brand">SV: Lê Quang Long (231A011163)</div>
+        <ul class="nav-menu">
+            <li><a onclick="switchTab('home')" id="tab-home" class="active">Trang Chủ</a></li>
+            <li><a onclick="switchTab('game')" id="tab-game">Trò Chơi (Bt 28b)</a></li>
+            <li><a onclick="switchTab('guide')" id="tab-guide">Hướng Dẫn / Mô Tả</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+
+        <!-- 1. TRANG CHỦ -->
+        <div id="section-home" class="page-section active">
+            <div class="profile-card">
+                <img src="avt.jpg" alt="Avatar sinh viên" class="profile-avatar">
+                <div class="profile-info">
+                    <h2>Lê Quang Long</h2>
+                    <p><strong>Mã số sinh viên:</strong> 231A011163</p>
+                    <p><strong>Lớp học phần:</strong> Lập trình Web</p>
+                    <p><strong>Mô tả ngắn:</strong> Trang chủ tổng hợp kết quả thực hành bài tập môn Lập trình Web.</p>
+                </div>
+            </div>
+
+            <h2 style="color: #38bdf8; margin-bottom: 15px;">Danh mục bài tập</h2>
+            <div class="menu-grid">
+                <a class="menu-card" href="bt27.jpg" target="_blank">
+                    <h3>Bài tập 27</h3>
+                    <p>Xem kết quả (bt27.jpg)</p>
+                </a>
+                <a class="menu-card" href="bt28.html" target="_blank">
+                    <h3>Bài tập 28</h3>
+                    <p>Game Tốc độ phản xạ cơ bản</p>
+                </a>
+                <a class="menu-card" href="bt28a.html" target="_blank">
+                    <h3>Bài tập 28a</h3>
+                    <p>Game Tốc độ phản xạ nâng cao</p>
+                </a>
+                <a class="menu-card" href="#" onclick="switchTab('game')">
+                    <h3>Bài tập 28b</h3>
+                    <p>Game Tốc độ phản xạ (Bản tối ưu giao diện)</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. TRANG HƯỚNG DẪN / MÔ TẢ TRÒ CHƠI -->
+        <div id="section-guide" class="page-section">
+            <div class="game-container" style="text-align: left; padding: 30px;">
+                <h2 style="color: #38bdf8; margin-bottom: 15px;">Hướng Dẫn & Mô Tả Trò Chơi</h2>
+                <p style="margin-bottom: 10px;"><strong>Mục đích:</strong> Kiểm tra độ nhạy bén và tốc độ phản xạ click chuột.</p>
+                <p style="margin-bottom: 10px;"><strong>Quy tắc tính điểm:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 15px; color: #cbd5e1; line-height: 1.6;">
+                    <li>🟢 <strong>Mục tiêu chuẩn:</strong> +1 điểm.</li>
+                    <li>🔴 <strong>Mục tiêu bẫy:</strong> -2 điểm và mất 1 mạng.</li>
+                    <li>🟡 <strong>Mục tiêu đặc biệt:</strong> +3 điểm và cộng 2 giây thời gian.</li>
+                </ul>
+                <p style="margin-bottom: 10px;"><strong>Tính năng hỗ trợ:</strong></p>
+                <ul style="margin-left: 20px; color: #cbd5e1; line-height: 1.6;">
+                    <li>🎨 Đổi màu nền khu vực bàn chơi.</li>
+                    <li>👤 Hiển thị thông tin sinh viên thực hiện.</li>
+                    <li>⏱️ Tùy chọn thời gian đếm ngược (15s, 30s, 60s).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 3. TRANG TRÒ CHƠI (BÀI TẬP 28B) -->
+        <div id="section-game" class="page-section">
+            <div class="game-container">
+                <h1>GAME KIỂM TRA TỐC ĐỘ PHẢN XẠ (BÀI TẬP 28B)</h1>
+
+                <div class="game-controls-top">
+                    <div>
+                        <label for="time-select">Thời gian:</label>
+                        <select id="time-select">
+                            <option value="15">15 giây</option>
+                            <option value="30" selected>30 giây</option>
+                            <option value="60">60 giây</option>
+                        </select>
+                    </div>
+                    <button class="btn-action" onclick="changeArenaBackground()">🎨 Đổi màu nền</button>
+                    <button class="btn-action" onclick="showPlayerInfo()">👤 Người chơi</button>
+                </div>
+
+                <div class="info-panel">
+                    <div>Điểm số <span id="score">0</span></div>
+                    <div class="lives">Mạng sống <span id="lives">3</span></div>
+                    <div>Cấp độ <span id="level">1</span></div>
+                    <div>Thời gian <span id="timer">30</span>s</div>
+                    <div class="highscore">Cao nhất <span id="highscore">0</span></div>
+                </div>
+
+                <div id="arena"></div>
+
+                <button id="start-btn" onclick="startGame()">Bắt đầu trò chơi</button>
+                <div id="warning" class="warning-text"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal thông tin Người chơi -->
+    <div id="player-modal" class="modal">
+        <div class="modal-content">
+            <h3>Thông Tin Sinh Viên</h3>
+            <p><strong>Họ và tên:</strong> Lê Quang Long</p>
+            <p><strong>Mã sinh viên:</strong> 231A011163</p>
+            <p><strong>Lớp học phần:</strong> Lập trình Web</p>
+            <button class="close-modal" onclick="closePlayerModal()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+
+            if (tabName === 'home') {
+                document.getElementById('section-home').classList.add('active');
+                document.getElementById('tab-home').classList.add('active');
+            } else if (tabName === 'game') {
+                document.getElementById('section-game').classList.add('active');
+                document.getElementById('tab-game').classList.add('active');
+            } else if (tabName === 'guide') {
+                document.getElementById('section-guide').classList.add('active');
+                document.getElementById('tab-guide').classList.add('active');
+            }
+        }
+
+        function showPlayerInfo() {
+            document.getElementById('player-modal').style.display = 'flex';
+        }
+
+        function closePlayerModal() {
+            document.getElementById('player-modal').style.display = 'none';
+        }
+
+        const arenaColors = ['#090d16', '#111827', '#1e1b4b', '#064e3b', '#450a0a', '#31103f'];
+        let currentColorIndex = 0;
+
+        function changeArenaBackground() {
+            currentColorIndex = (currentColorIndex + 1) % arenaColors.length;
+            document.getElementById('arena').style.backgroundColor = arenaColors[currentColorIndex];
+        }
+
+        const arena = document.getElementById('arena');
+        const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const levelDisplay = document.getElementById('level');
+        const timerDisplay = document.getElementById('timer');
+        const highscoreDisplay = document.getElementById('highscore');
+        const startBtn = document.getElementById('start-btn');
+        const warningDisplay = document.getElementById('warning');
+        const timeSelect = document.getElementById('time-select');
+
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let timeLeft = 30;
+        let isGameRunning = false;
+
+        let gameTimer = null;
+        let spawnTimer = null;
+        let activeTargets = [];
+
+        let lastClickTime = 0;
+        let isLockedOut = false;
+        let emptyMissCount = 0;
+
+        const ARENA_WIDTH = 700;
+        const ARENA_HEIGHT = 450;
+
+        function getSavedHighScore() {
+            try {
+                const encoded = localStorage.getItem('hs_encoded_231A011163');
+                if (!encoded) return 0;
+                return parseInt(atob(encoded)) ^ 42;
+            } catch (e) { return 0; }
+        }
+
+        function saveHighScore(val) {
+            try {
+                localStorage.setItem('hs_encoded_231A011163', btoa((val ^ 42).toString()));
+            } catch (e) {}
+        }
+
+        highscoreDisplay.textContent = getSavedHighScore();
+
+        function showFloatingText(text, x, y, isPlus) {
+            const el = document.createElement('div');
+            el.className = `floating-text ${isPlus ? 'plus' : 'minus'}`;
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            arena.appendChild(el);
+            setTimeout(() => el.remove(), 600);
+        }
+
+        function getNonOverlappingPosition(size) {
+            let attempts = 0;
+            let left, top;
+            const maxLeft = ARENA_WIDTH - size;
+            const maxTop = ARENA_HEIGHT - size;
+
+            while (attempts < 50) {
+                left = Math.floor(Math.random() * maxLeft);
+                top = Math.floor(Math.random() * maxTop);
+
+                let overlapping = false;
+                for (let t of activeTargets) {
+                    const dx = t.left - left;
+                    const dy = t.top - top;
+                    if (Math.sqrt(dx * dx + dy * dy) < size + 15) {
+                        overlapping = true;
+                        break;
+                    }
+                }
+                if (!overlapping) return { left, top };
+                attempts++;
+            }
+            return { left: Math.floor(Math.random() * maxLeft), top: Math.floor(Math.random() * maxTop) };
+        }
+
+        function spawnTarget() {
+            if (!isGameRunning) return;
+
+            const randType = Math.random();
+            let type = 'standard';
+            let size = 45;
+            let duration = Math.max(800, 1500 - (level - 1) * 150);
+
+            if (randType > 0.85) {
+                type = 'bonus';
+                size = 35;
+                duration = 1200;
+            } else if (randType > 0.60) {
+                type = 'trap';
+                size = 45;
+            }
+
+            const pos = getNonOverlappingPosition(size);
+            const targetEl = document.createElement('div');
+            targetEl.className = `target ${type}`;
+            targetEl.style.left = pos.left + 'px';
+            targetEl.style.top = pos.top + 'px';
+            targetEl.style.animationDuration = (duration / 1000) + 's';
+
+            const targetObj = { element: targetEl, left: pos.left, top: pos.top, type: type };
+            activeTargets.push(targetObj);
+
+            targetEl.addEventListener('pointerdown', function(e) {
+                e.stopPropagation();
+                if (!isGameRunning || isLockedOut) return;
+
+                const rect = arena.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+
+                if (type === 'standard') {
+                    score += 1;
+                    showFloatingText('+1', clickX, clickY, true);
+                } else if (type === 'trap') {
+                    score = Math.max(0, score - 2);
+                    lives = Math.max(0, lives - 1);
+                    showFloatingText('-2', clickX, clickY, false);
+                } else if (type === 'bonus') {
+                    score += 3;
+                    timeLeft += 2;
+                    timerDisplay.textContent = timeLeft;
+                    showFloatingText('+3', clickX, clickY, true);
+                }
+
+                updateUI();
+                removeTarget(targetObj);
+
+                if (lives <= 0) endGame();
+            });
+
+            arena.appendChild(targetEl);
+
+            targetObj.expireTimeout = setTimeout(() => {
+                if (activeTargets.includes(targetObj)) {
+                    removeTarget(targetObj);
+                    if (type === 'bonus' || type === 'standard') {
+                        lives = Math.max(0, lives - 1);
+                        updateUI();
+                        if (lives <= 0) endGame();
+                    }
+                }
+            }, duration);
+
+            let nextSpawnInterval = Math.max(400, 1000 - (level - 1) * 80);
+            spawnTimer = setTimeout(spawnTarget, nextSpawnInterval);
+        }
+
+        function removeTarget(targetObj) {
+            clearTimeout(targetObj.expireTimeout);
+            if (targetObj.element && targetObj.element.parentNode) {
+                targetObj.element.remove();
+            }
+            activeTargets = activeTargets.filter(t => t !== targetObj);
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            livesDisplay.textContent = lives;
+            levelDisplay.textContent = level;
+
+            let newLevel = Math.floor(score / 10) + 1;
+            if (newLevel !== level) {
+                level = newLevel;
+                levelDisplay.textContent = level;
+            }
+        }
+
+        arena.addEventListener('pointerdown', function(e) {
+            if (!isGameRunning || isLockedOut) return;
+            if (e.target === arena) {
+                const now = Date.now();
+                if (!e.isTrusted || (now - lastClickTime < 60)) {
+                    emptyMissCount++;
+                    if (emptyMissCount > 2) {
+                        isLockedOut = true;
+                        warningDisplay.textContent = "⚠️ Cảnh báo: Phát hiện thao tác bất thường! Thao tác bị khóa 0.5s.";
+                        setTimeout(() => {
+                            isLockedOut = false;
+                            warningDisplay.textContent = "";
+                            emptyMissCount = 0;
+                        }, 500);
+                    }
+                }
+                lastClickTime = now;
+            }
+        });
+
+        function startGame() {
+            cleanupGame();
+
+            score = 0;
+            lives = 3;
+            level = 1;
+            timeLeft = parseInt(timeSelect.value) || 30;
+            isGameRunning = true;
+            isLockedOut = false;
+            emptyMissCount = 0;
+
+            updateUI();
+            timerDisplay.textContent = timeLeft;
+            warningDisplay.textContent = '';
+            startBtn.disabled = true;
+            timeSelect.disabled = true;
+
+            arena.innerHTML = '';
+            activeTargets = [];
+
+            spawnTarget();
+
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function cleanupGame() {
+            isGameRunning = false;
+            clearInterval(gameTimer);
+            clearTimeout(spawnTimer);
+            activeTargets.forEach(t => clearTimeout(t.expireTimeout));
+            activeTargets = [];
+            arena.innerHTML = '';
+            timeSelect.disabled = false;
+        }
+
+        function endGame() {
+            cleanupGame();
+            startBtn.disabled = false;
+
+            let currentHigh = getSavedHighScore();
+            if (score > currentHigh) {
+                saveHighScore(score);
+                currentHigh = score;
+                warningDisplay.textContent = "🎉 Chúc mừng! Bạn đã phá kỷ lục điểm số cao nhất mới!";
+            }
+            highscoreDisplay.textContent = currentHigh;
+
+            alert(`⏰ Hết trò chơi!\n🏆 Điểm số đạt được: ${score}\n⭐ Cấp độ đạt tới: ${level}\n🎖️ Điểm cao nhất: ${currentHigh}`);
+        }
+    </script>
+</body>
+</html>

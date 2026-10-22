@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài tập 28 - Game kiểm tra tốc độ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        /* Bảng thông tin hiển thị */
+        .info-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .info-panel span {
+            color: #e74c3c;
+            font-size: 22px;
+        }
+
+        /* Khu vực chơi #arena */
+        #arena {
+            width: 600px;
+            height: 400px;
+            background-color: #1e1e2f;
+            border: 3px solid #333;
+            border-radius: 8px;
+            position: relative; /* Bắt buộc để định vị tuyệt đối các mục tiêu */
+            overflow: hidden;
+            margin: 0 auto 20px auto;
+            cursor: crosshair;
+        }
+
+        /* Mục tiêu (Hình tròn nhỏ) */
+        .target {
+            width: 40px;
+            height: 40px;
+            background-color: #e74c3c;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: absolute; /* Định vị tuyệt đối */
+            box-shadow: 0 0 10px #e74c3c;
+            transition: transform 0.1s ease;
+            user-select: none;
+        }
+
+        .target:active {
+            transform: scale(0.8);
+        }
+
+        /* Nút Bắt đầu */
+        #start-btn {
+            padding: 10px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #2ecc71;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        #start-btn:hover {
+            background-color: #27ae60;
+        }
+
+        #start-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>GAME KIỂM TRA TỐC ĐỘ PHẢN XẠ</h1>
+
+        <!-- Bảng thông tin -->
+        <div class="info-panel">
+            <div>Điểm số: <span id="score">0</span></div>
+            <div>Thời gian: <span id="timer">30</span>s</div>
+        </div>
+
+        <!-- Khu vực chơi #arena -->
+        <div id="arena"></div>
+
+        <!-- Nút bắt đầu -->
+        <button id="start-btn" onclick="startGame()">Bắt đầu trò chơi</button>
+    </div>
+
+    <script>
+        const arena = document.getElementById('arena');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+
+        let score = 0;
+        let timeLeft = 30;
+        let gameTimer = null;
+        let moveTimer = null;
+        let targetElement = null;
+        let isGameRunning = false;
+
+        const TARGET_SIZE = 40; // Kích thước mục tiêu (40px x 40px)
+        const ARENA_WIDTH = 600;
+        const ARENA_HEIGHT = 400;
+
+        // Hàm tạo hoặc di chuyển mục tiêu tới vị trí ngẫu nhiên
+        function spawnTarget() {
+            if (!isGameRunning) return;
+
+            // Tính toán tọa độ ngẫu nhiên sao cho mục tiêu không bị đè ra ngoài khung
+            const maxLeft = ARENA_WIDTH - TARGET_SIZE;
+            const maxTop = ARENA_HEIGHT - TARGET_SIZE;
+
+            const randomLeft = Math.floor(Math.random() * maxLeft);
+            const randomTop = Math.floor(Math.random() * maxTop);
+
+            if (!targetElement) {
+                targetElement = document.createElement('div');
+                targetElement.className = 'target';
+                
+                // Sự kiện khi click trúng mục tiêu
+                targetElement.addEventListener('mousedown', function(e) {
+                    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+                    if (!isGameRunning) return;
+
+                    score++;
+                    scoreDisplay.textContent = score;
+
+                    // Đổi vị trí ngay lập tức và reset lại bộ đếm 1 giây
+                    resetMoveInterval();
+                    spawnTarget();
+                });
+
+                arena.appendChild(targetElement);
+            }
+
+            // Cập nhật vị trí top, left
+            targetElement.style.left = randomLeft + 'px';
+            targetElement.style.top = randomTop + 'px';
+        }
+
+        // Tự động đổi vị trí mục tiêu mỗi 1 giây
+        function resetMoveInterval() {
+            clearInterval(moveTimer);
+            moveTimer = setInterval(spawnTarget, 1000);
+        }
+
+        // Hàm bắt đầu trò chơi
+        function startGame() {
+            // Reset dữ liệu
+            score = 0;
+            timeLeft = 30;
+            isGameRunning = true;
+
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
+            startBtn.disabled = true;
+
+            // Xóa mục tiêu cũ nếu có
+            arena.innerHTML = '';
+            targetElement = null;
+
+            // Sinh mục tiêu đầu tiên
+            spawnTarget();
+            resetMoveInterval();
+
+            // Đếm ngược thời gian (30 giây)
+            gameTimer = setInterval(function() {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // Hàm kết thúc trò chơi
+        function endGame() {
+            isGameRunning = false;
+            clearInterval(gameTimer);
+            clearInterval(moveTimer);
+
+            // Khóa toàn bộ thao tác trong arena và xóa mục tiêu
+            if (targetElement) {
+                targetElement.remove();
+                targetElement = null;
+            }
+
+            startBtn.disabled = false;
+
+            // Hiển thị kết quả
+            alert('Hết giờ! Tổng số điểm bạn đạt được là: ' + score + ' điểm.');
+        }
+    </script>
+
+</body>
+</html>
